@@ -1,5 +1,5 @@
-import cv2
-from ultralytics import YOLO
+import cv2 # uv add open-cv
+from ultralytics import YOLO # uv add ultralytics
 import ntcore # uv add pyntcore https://robotpy.readthedocs.io/en/2023.5/install/pyntcore.html
 import time
 import math
