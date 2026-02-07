@@ -68,12 +68,12 @@ while cap.isOpened():
             table.putBoolean("target_on_ground", target_on_ground)
             table.putNumber("distance", distance)
             
-        annotatedFrame = results.plot()
-        cv2.imshow("YOLO Inference", annotatedFrame)
+        #annotatedFrame = results.plot()
+        #cv2.imshow("YOLO Inference", annotatedFrame)
         
         if cv2.waitKey(1) == ord('q'):
             print("Let's get out of here...")
             break
     #break
 cap.release()
-cv2.destroyAllWindows()
+#cv2.destroyAllWindows()
