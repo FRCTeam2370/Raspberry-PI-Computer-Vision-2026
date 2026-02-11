@@ -1,6 +1,7 @@
 import cv2 # uv add open-cv
 from ultralytics import YOLO # uv add ultralytics
 import ntcore # uv add pyntcore https://robotpy.readthedocs.io/en/2023.5/install/pyntcore.html
+#from networktables import NetworkTables
 import time
 import math
 
@@ -9,12 +10,15 @@ import math
 model_input_size = 352
 camera_fov = 1.195551   # camera_fov should be in radians
 camera_input_index = 1
-model_path = "/home/josh/Documents/ibots/1_29_26_full_integer_quant_edgetpu.tflite"
+model_path = "/home/josh/Documents/ibots/2_10_26_full_integer_quant_edgetpu.tflite"
 mount_height = 0.2 # The camera mount height should be in meters
 
-# Set up network table
-networktable_instance = ntcore.NetworkTableInstance.getDefault()
-table = networktable_instance.getTable("fuelCV")
+# Set up NetworkTable
+# Get the default NetworkTable instance
+inst = ntcore.NetworkTableInstance.getDefault()
+inst.startClient4("Raspberry Pi")
+inst.setServerTeam(2370)
+table = inst.getTable("fuelFRC") 
 
 # Set up video feed + CV model
 model = YOLO(model_path, task="detect")
@@ -40,7 +44,8 @@ while cap.isOpened():
 
         #print(results)
 
-        boxes = results.boxes[results.boxes.conf > 0.3]
+        boxes = results.boxes[results.boxes.conf > 0.6]
+        table.putNumber("number_of_fuel", boxes.__len__())
 
         for b in boxes:
             tx, ty, tw, th = b.xywh[0]
@@ -48,6 +53,9 @@ while cap.isOpened():
             y = ty.item()
             w = tw.item()
             h = th.item()
+            size = tw*th
+            print(f"Size: {size}")
+
             # target position is from - half of the camera fov to + half the camera fov
             target_position_x = (x + (w/2) - (model_input_size/2))
             target_position_x = (x + (h/2) - (model_input_size/2))
@@ -62,18 +70,17 @@ while cap.isOpened():
 
             distance = mount_height/math.tan(pitch_radians)
 
-            print(f"{yaw_radians} {pitch_radians}")
             table.putNumber("yaw_radians", yaw_radians)
             table.putNumber("pitch_radians", pitch_radians)
             table.putBoolean("target_on_ground", target_on_ground)
             table.putNumber("distance", distance)
             
-        #annotatedFrame = results.plot()
-        #cv2.imshow("YOLO Inference", annotatedFrame)
+        annotatedFrame = results.plot()
+        cv2.imshow("YOLO Inference", annotatedFrame)
         
         if cv2.waitKey(1) == ord('q'):
             print("Let's get out of here...")
             break
     #break
 cap.release()
-#cv2.destroyAllWindows()
+cv2.destroyAllWindows()
