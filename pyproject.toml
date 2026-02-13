@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "pynetworktables>=2021.0.0",
+    "pynput>=1.8.1",
     "pyntcore>=2026.2.1",
     "tensorflow>=2.20.0",
     "ultralytics>=8.4.5",

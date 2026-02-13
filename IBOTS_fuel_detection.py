@@ -10,7 +10,7 @@ import math
 model_input_size = 352
 camera_fov = 1.195551   # camera_fov should be in radians
 camera_input_index = 1
-model_path = "/home/josh/Documents/ibots/2_10_26_full_integer_quant_edgetpu.tflite"
+model_path = "/home/josh/Documents/ibots/2_12_26.2_full_integer_quant_edgetpu.tflite"
 mount_height = 0.2 # The camera mount height should be in meters
 
 # Set up NetworkTable
@@ -18,7 +18,7 @@ mount_height = 0.2 # The camera mount height should be in meters
 inst = ntcore.NetworkTableInstance.getDefault()
 inst.startClient4("Raspberry Pi")
 inst.setServerTeam(2370)
-table = inst.getTable("fuelFRC") 
+table = inst.getTable("fuelCV") 
 
 # Set up video feed + CV model
 model = YOLO(model_path, task="detect")
@@ -35,12 +35,17 @@ while not connected_to_camera:
         connected_to_camera = False
 
 while cap.isOpened():
+    #for _ in range(5):
     success, rawframe = cap.read()
 
     if success:
         frame = cv2.resize(rawframe, (model_input_size, model_input_size))
 
         results = model(frame, conf=0.5)[0]
+
+        yaw_radians = []
+        pitch_radians = []
+        distances = []
 
         #print(results)
 
@@ -53,34 +58,31 @@ while cap.isOpened():
             y = ty.item()
             w = tw.item()
             h = th.item()
-            size = tw*th
-            print(f"Size: {size}")
+
+            distance_height = 60/h
+            distance_width = 34.4/w
+            print(f"Distance: Width: {distance_width}, Height: {distance_height}")
+            if distance_width > distance_height:
+                distances.append(distance_width)
+            else:
+                distances.append(distance_height)
 
             # target position is from - half of the camera fov to + half the camera fov
             target_position_x = (x + (w/2) - (model_input_size/2))
             target_position_x = (x + (h/2) - (model_input_size/2))
             # Scale pixel position of bounding box to radians. Radians should be positive to the left and negative to the right
-            yaw_radians = -2*target_position_x/model_input_size*camera_fov
-            pitch_radians = -2*target_position_x/model_input_size*camera_fov
+            yaw_radians.append(-2*target_position_x/model_input_size*camera_fov)
+            pitch_radians.append(-2*target_position_x/model_input_size*camera_fov)
 
-            if h < 0:
-                target_on_ground = True
-            else:
-                target_on_ground = False
-
-            distance = mount_height/math.tan(pitch_radians)
-
-            table.putNumber("yaw_radians", yaw_radians)
-            table.putNumber("pitch_radians", pitch_radians)
-            table.putBoolean("target_on_ground", target_on_ground)
-            table.putNumber("distance", distance)
+            table.putNumberArray("yaw_radians", yaw_radians)
+            table.putNumberArray("pitch_radians", pitch_radians)
+            table.putNumberArray("distance", distances)
             
-        annotatedFrame = results.plot()
-        cv2.imshow("YOLO Inference", annotatedFrame)
-        
-        if cv2.waitKey(1) == ord('q'):
-            print("Let's get out of here...")
-            break
-    #break
+        #annotatedFrame = results.plot()
+        #cv2.imshow("YOLO Inference", annotatedFrame)
+    
+        #if cv2.waitKey(1) == ord('q'):
+            #print("Exiting Program...")
+            #break
 cap.release()
 cv2.destroyAllWindows()
