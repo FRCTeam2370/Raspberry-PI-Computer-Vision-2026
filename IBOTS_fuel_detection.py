@@ -13,9 +13,9 @@ CAMERA_FOV_HORIZONTAL = 0.6981   # CAMERA_FOV_HORIZONTAL should be in radians
 CAMERA_FOV_VERTICAL = 0.4363   # CAMERA_FOV_HORIZONTAL should be in radians
 #CAMERA_CENTER_PIZEL_OFFSET = -40
 CAMERA_INPUT_INDEX = 1
-MODEL_PATH = "/home/josh/Documents/ibots/2_12_26.2_full_integer_quant_edgetpu.tflite"
-DOUBLE_DETECTION_CLOSENESS_TOLERENCES = 0.1
-CLUMP_CLOSENESS_TOLERENCES = 0.3
+MODEL_PATH = "/home/josh/Documents/ibots/2_15_26_3655_full_integer_quant_edgetpu.tflite"
+DOUBLE_DETECTION_CLOSENESS_TOLERENCES = 0.02
+CLUMP_CLOSENESS_TOLERENCES = 0.1
 DISTANCE_WEIGHT_SCALAR = 1
 
 # Set up NetworkTable
@@ -127,8 +127,8 @@ while cap.isOpened():
                 weights.append(round(weight,2))
                 # For Weight Annotations:
                 '''image_x.append(x)
-                image_y.append(y)
-                final_boxes.append(b)'''
+                image_y.append(y)'''
+                final_boxes.append(b)
             
         ball_positions_x = []
         #for i in range(len(yaw_radians)):
