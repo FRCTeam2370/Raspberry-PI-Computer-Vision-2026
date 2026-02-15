@@ -64,8 +64,8 @@ while cap.isOpened():
         weights = []
 
         # For Weight Annotations:
-        image_x = []
-        image_y = []
+        '''image_x = []
+        image_y = []'''
 
         #print(results)
 
@@ -126,9 +126,9 @@ while cap.isOpened():
                 distances.append(distance)
                 weights.append(round(weight,2))
                 # For Weight Annotations:
-                image_x.append(x)
+                '''image_x.append(x)
                 image_y.append(y)
-                final_boxes.append(b)
+                final_boxes.append(b)'''
             
         ball_positions_x = []
         #for i in range(len(yaw_radians)):
@@ -152,7 +152,7 @@ while cap.isOpened():
         
         print(f"Filtered: {len(yaw_radians)}, Yaw Radians: {yaw_radians}, Weights: {weights}")
 
-        results.boxes = final_boxes
+        '''results.boxes = final_boxes
         annotatedFrame = results.plot()
 
         # Annotate weights
@@ -164,7 +164,7 @@ while cap.isOpened():
     
         if cv2.waitKey(1) == ord('q'):
             print("Exiting Program...")
-            break
+            break'''
 
 cap.release()
 cv2.destroyAllWindows()
