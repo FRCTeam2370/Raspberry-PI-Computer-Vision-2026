@@ -8,6 +8,7 @@ dependencies = [
     "pynetworktables>=2021.0.0",
     "pynput>=1.8.1",
     "pyntcore>=2026.2.1",
+    "supervision>=0.27.0.post1",
     "tensorflow>=2.20.0",
     "ultralytics>=8.4.5",
     "zombie-imp>=0.0.4",
