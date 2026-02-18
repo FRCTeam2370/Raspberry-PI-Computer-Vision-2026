@@ -20,6 +20,9 @@ DISTANCE_WEIGHT_SCALAR = 1
 BALL_DIAMETER = 0.1501
 PITCH_WHERE_TARGET_IS_NOT_ON_GROUND = -0.01 # Self explanatory (oh, and its in radians)
 
+DIST_CONST_HEIGHT = BALL_DIAMETER / 2 / math.sin(CAMERA_FOV_VERTICAL / 2)/2
+DIST_CONST_WIDTH = BALL_DIAMETER / 2 / math.sin(CAMERA_FOV_HORIZONTAL / 2)/2
+
 # Set up NetworkTable
 inst = ntcore.NetworkTableInstance.getDefault()
 inst.startClient4("Raspberry Pi")
@@ -104,8 +107,8 @@ while cap.isOpened():
             pitch_radian = (target_position_y/MODEL_INPUT_SIZE*CAMERA_FOV_VERTICAL)
 
             # Calculate distance based on bounding box lengths
-            distance_height = (MODEL_INPUT_SIZE/h * BALL_DIAMETER / 2) / math.sin(CAMERA_FOV_VERTICAL / 2)/2
-            distance_width = (MODEL_INPUT_SIZE/w * BALL_DIAMETER / 2) / math.sin(CAMERA_FOV_HORIZONTAL / 2)/2
+            distance_height = MODEL_INPUT_SIZE/h * DIST_CONST_HEIGHT
+            distance_width = MODEL_INPUT_SIZE/w * DIST_CONST_WIDTH
             distance = round(distance_height, 2)
             #print(f"Pitch: {pitch_radian}, Dist: {distance}")
 
@@ -180,8 +183,8 @@ while cap.isOpened():
         for i in range(len(yaw_radians)):
             x,y = image_x[i], image_y[i]
             annotation = f"Weight: {weights[i]}"
-            #annotation = f"Distance: {distances[i]}"
-            annotation = f"Radians: {pitch_radians[i]}"
+            annotation = f"Distance: {distances[i]}"
+            #annotation = f"Radians: {pitch_radians[i]}"
             cv2.putText(annotatedFrame, annotation, (round(x), round(y)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255 , 0, 0), 1, cv2.LINE_AA)
         cv2.imshow("Processed Feed", annotatedFrame)
         if cv2.waitKey(1) == ord('q'):
