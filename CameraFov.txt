@@ -1,0 +1,22 @@
+FOV Horizontal: 0.3
+FOV Vertical: 0.8376FOV Horizontal: 0.3
+FOV Vertical: 0.8376FOV Horizontal: 0.3
+FOV Vertical: 0.8376FOV Horizontal: 0.3
+FOV Vertical: 0.8376
+FOV Horizontal: 0.3496999999999945
+FOV Vertical: 0.8376
+FOV Horizontal: 0.5291999999999968
+FOV Vertical: 0.4
+FOV Horizontal: 0.22609999999999714
+FOV Vertical: 0.2
+FOV Horizontal: 0.10410000000000012
+FOV Vertical: 0.1
+FOV Horizontal: 0.6611999999999932
+FOV Vertical: 0.49300000000001176
+FOV Horizontal: 0.7892999999999791
+FOV Vertical: 0.49510000000001153
+FOV Horizontal: 0.6
+FOV Vertical: 0.6
+Finished with average results:
+FOV Horizontal: 0.6520999999999942
+FOV Vertical: 0.6

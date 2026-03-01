@@ -1,0 +1,126 @@
+import cv2 # uv add open-cv
+from ultralytics import YOLO # uv add ultralytics
+import math
+
+# ======
+# Setup Constants
+# ======
+DISTANCE_OF_FUEL = 1.5
+TRIALS = 1
+MODEL_INPUT_SIZE = 352
+MODEL_DETECTION_CONF_THRESHOLD = 0.4
+CAMERA_FOV_HORIZONTAL = 0.6   # FOV starting index - CAMERA_FOV_HORIZONTAL should be in radians
+CAMERA_FOV_VERTICAL = 0.6   # FOV starting index - CAMERA_FOV_VERTICAL should be in radians
+CAMERA_INPUT_INDEX = 1
+MODEL_PATH = "/home/josh/Documents/ibots/2_17_26_90_full_integer_quant_edgetpu.tflite"
+DOUBLE_DETECTION_CLOSENESS_TOLERENCES = 0.01
+BALL_DIAMETER = 0.1501 # Meters
+
+tuning_horizontal = True
+exit = False
+horizontal_results = []
+vertical_results = []
+
+# Set up CV model
+loaded = False
+while not loaded:
+    try:
+        model = YOLO(MODEL_PATH, task="detect")
+        loaded = True
+    except ValueError as e:
+        print(f"Loading model failed: {e}")
+
+# Connect to camera
+connected_to_camera = False
+
+while not connected_to_camera:
+    try:
+        cap = cv2.VideoCapture(0)
+
+        if cap.isOpened():
+            connected_to_camera = True
+    except:
+        connected_to_camera = False
+
+for trial in range(TRIALS):
+    # Grab one frame for calibration
+    success, rawframe = cap.read()
+    if success:
+            frame = cv2.resize(rawframe, (MODEL_INPUT_SIZE, MODEL_INPUT_SIZE))
+            results = model(frame, conf=MODEL_DETECTION_CONF_THRESHOLD)[0]
+
+            # ONLY USE THE FIRST BOX
+            boxes = results.boxes[results.boxes.conf > MODEL_DETECTION_CONF_THRESHOLD]
+            boxes = boxes[0]
+
+            tx, ty, tw, th = boxes[0].xywh[0]
+            x = tx.item()
+            y = ty.item()
+            w = tw.item()
+            h = th.item()
+
+                
+
+    calibrating = True
+    while calibrating:
+        # Calculate distance based on bounding box lengths
+        if tuning_horizontal: 
+            DIST_CONST_WIDTH = BALL_DIAMETER / 2 / math.sin(CAMERA_FOV_HORIZONTAL / 2)/2
+            distance_width = MODEL_INPUT_SIZE/w * DIST_CONST_WIDTH
+            distance = round(distance_width, 2)
+        else: 
+            DIST_CONST_HEIGHT = BALL_DIAMETER / 2 / math.sin(CAMERA_FOV_VERTICAL / 2)/2
+            distance_height = MODEL_INPUT_SIZE/h * DIST_CONST_HEIGHT
+            distance = round(distance_height, 2)
+
+        # Calibrate FOV based on distance
+        if distance > DISTANCE_OF_FUEL:
+            if tuning_horizontal:
+                CAMERA_FOV_HORIZONTAL += .0001
+            if not tuning_horizontal:
+                    CAMERA_FOV_VERTICAL += 0.0001
+
+        if distance < DISTANCE_OF_FUEL:
+            if tuning_horizontal:
+                CAMERA_FOV_HORIZONTAL -= .0001
+            if not tuning_horizontal:
+                CAMERA_FOV_VERTICAL -= 0.0001
+
+        if abs(distance - DISTANCE_OF_FUEL) < .02:
+            if tuning_horizontal:
+                tuning_horizontal = False
+            else:
+                calibrating = False
+
+        # Show Feed
+        annotatedFrame = results.plot()
+        annotation = f"Distance: {distance}"
+
+        if tuning_horizontal:
+            progress = f"Tuning Horizontal FOV... {CAMERA_FOV_HORIZONTAL}"
+        else:
+            progress = f"Tuning Vertical FOV...{CAMERA_FOV_VERTICAL}"
+
+        cv2.putText(annotatedFrame, annotation, (round(x), round(y)), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255 , 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(annotatedFrame, progress, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.5, (0 , 0, 255), 1, cv2.LINE_AA)
+
+        cv2.imshow("Processed Feed", annotatedFrame)
+
+        if cv2.waitKey(1) == ord('q'):
+            print("Exiting Program...")
+            calibrating = False
+
+    horizontal_results.append(CAMERA_FOV_HORIZONTAL)
+    vertical_results.append(CAMERA_FOV_VERTICAL)
+    calibration_result = f"Trial {trial} finished with results:\nFOV Horizontal: {CAMERA_FOV_HORIZONTAL}\nFOV Vertical: {CAMERA_FOV_VERTICAL}\n"
+    print(calibration_result)
+
+avg_horizontal = sum(horizontal_results) / len(horizontal_results)
+avg_vertical = sum(vertical_results) / len(vertical_results)
+calibration_results = f"Finished with average results:\nFOV Horizontal: {avg_horizontal}\nFOV Vertical: {avg_vertical}\n"
+
+with open("CameraFov.txt", "a") as file:
+    file.write(calibration_results)
+
+cap.release()
+cv2.destroyAllWindows()
