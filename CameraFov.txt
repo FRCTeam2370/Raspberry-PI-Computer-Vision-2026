@@ -20,3 +20,15 @@ FOV Vertical: 0.6
 Finished with average results:
 FOV Horizontal: 0.6520999999999942
 FOV Vertical: 0.6
+Finished with average results:
+FOV Horizontal: 0.7892999999999791
+FOV Vertical: 0.4157000000000203
+Finished with average results:
+FOV Horizontal: 0.7892999999999791
+FOV Vertical: 0.4157000000000203
+Finished with average results:
+FOV Horizontal: 0.7892999999999791
+FOV Vertical: 0.5339800000000072
+Finished with average results:
+FOV Horizontal: 0.7772799999999804
+FOV Vertical: 0.5725600000000031
